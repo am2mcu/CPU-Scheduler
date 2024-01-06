@@ -2,9 +2,7 @@ import threading
 import queue
 import time
 
-r1 = threading.Semaphore(1)
-r2 = threading.Semaphore(1)
-r3 = threading.Semaphore(1)
+resources = [threading.Semaphore(), threading.Semaphore(), threading.Semaphore()]
 
 X, Y, Z = 3, 2, 1
 
@@ -30,8 +28,7 @@ def execute_task(task_id, duration):
     time.sleep(duration)
     print(f"Task {task_id} completed")
 
-def shortest_job_first(thread_id, r1, r2, r3, tasks):
-    print(f"Thread {thread_id} started")
+def shortest_job_first(tasks):
     while tasks:
         # Sort tasks by duration in ascending order
         tasks = sorted(tasks, key=lambda x: x[2])
@@ -50,9 +47,14 @@ def shortest_job_first(thread_id, r1, r2, r3, tasks):
     print(f"Thread {thread_id} completed")
 
 def create_threads(r1, r2, r3, tasks):
+    resources[0] = threading.Semaphore(r1)
+    resources[1] = threading.Semaphore(r2)
+    resources[2] = threading.Semaphore(r3)
+    shortest_job_first(tasks)
+
     threads = []
     for i in range(4):
-        thread = threading.Thread(target=shortest_job_first, args=(i, r1, r2, r3, tasks))
+        thread = threading.Thread(target=shortest_job_first, args=(tasks))
         threads.append(thread)
         thread.start()
 

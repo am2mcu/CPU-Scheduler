@@ -7,7 +7,7 @@ counter = 0
 cycle = 0
 
 
-time_quantum = 3
+time_quantum = 2
 
 
 priority_mapping = {'X': 3, 'Y': 2, 'Z': 1}
@@ -49,10 +49,11 @@ def execute(cpu_index):
         semaphore.acquire()
         counter += 1
 
-        print(cycle)
-        if cycle == time_quantum and CPUs[cpu_index] != "Idle":
-            print("got here")
-            waiting_queue.append(CPUs[cpu_index])
+        print(cycle+1)
+        # if there's no task left it should not take out the task
+        if cycle == time_quantum and CPUs[cpu_index] != "Idle" and (ready_queue != [] or waiting_queue != []):
+            print("got here", cpu_index)
+            ready_queue.append(CPUs[cpu_index])
             CPUs[cpu_index] = "Idle"
                 
 
@@ -94,6 +95,7 @@ def execute(cpu_index):
             
             continue
 
+        print(waiting_queue)
         for task in waiting_queue:
             curr_waiting = task
             if curr_waiting.type == "X" and R[0] >= 1 and R[1] >= 1:

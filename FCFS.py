@@ -133,14 +133,18 @@ def execute(cpu_index):
         
 
 def output():
+    cycle = 0
     while True:
         # print(semaphore_out._value)
         semaphore_out.acquire()
         # print(semaphore_out._value)
         # condition.wait()
         # mutex.acquire()
+        cycle += 1
+        print(f"time  {cycle}")
         for i in range(len(CPUs)):
             print(f"CPU[{i+1}]: {CPUs[i].name if CPUs[i] != 'Idle' else 'Idle'}")
+        print()
 
         # semaphore.release()
         # mutex.release()

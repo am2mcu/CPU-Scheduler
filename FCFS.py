@@ -1,7 +1,6 @@
 import threading
 import time
 
-mutex = threading.Lock()
 semaphore = threading.Semaphore()
 semaphore_out = threading.Semaphore(0)
 counter = 0
@@ -119,10 +118,6 @@ def execute(cpu_index):
             curr_task.state = "waiting"
             waiting_queue.append(ready_queue.pop(0))
 
-        # print(counter)
-        # for i in range(len(CPUs)):
-        #     print(f"CPU[{i+1}]: {CPUs[i].name if CPUs[i] != 'Idle' else 'Idle'}")
-
         if counter == 4:
             counter = 0
             semaphore_out.release()
@@ -135,19 +130,12 @@ def execute(cpu_index):
 def output():
     cycle = 0
     while True:
-        # print(semaphore_out._value)
         semaphore_out.acquire()
-        # print(semaphore_out._value)
-        # condition.wait()
-        # mutex.acquire()
         cycle += 1
         print(f"time  {cycle}")
         for i in range(len(CPUs)):
             print(f"CPU[{i+1}]: {CPUs[i].name if CPUs[i] != 'Idle' else 'Idle'}")
         print()
-
-        # semaphore.release()
-        # mutex.release()
 
 def main():
     global ready_queue

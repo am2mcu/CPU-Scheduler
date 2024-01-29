@@ -72,8 +72,14 @@ def execute(cpu_index):
 
         
         if ready_queue == [] and waiting_queue == []:
-            print("got here")
-            break
+            if counter == 4:
+                counter = 0
+                semaphore_out.release()
+
+            semaphore.release()
+            time.sleep(2)
+            
+            continue
 
         for task in waiting_queue:
             curr_waiting = task

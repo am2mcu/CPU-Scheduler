@@ -51,9 +51,19 @@ def execute(cpu_index):
 
         print(cycle+1)
         # if there's no task left it should not take out the task
-        if cycle == time_quantum and CPUs[cpu_index] != "Idle" and (ready_queue != [] or waiting_queue != []):
-            print("got here", cpu_index)
+        if cycle == time_quantum and CPUs[cpu_index] != "Idle" and ( ready_queue != [] or waiting_queue != []):
             ready_queue.append(CPUs[cpu_index])
+            
+            if curr_task.type == "X":
+                R[0] += 1
+                R[1] += 1
+            elif curr_task.type == "Y":
+                R[1] += 1
+                R[2] += 1
+            elif curr_task.type == "Z":
+                R[0] += 1
+                R[2] += 1
+
             CPUs[cpu_index] = "Idle"
                 
 

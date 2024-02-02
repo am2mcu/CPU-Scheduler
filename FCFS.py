@@ -80,43 +80,46 @@ def execute(cpu_index):
             
             continue
 
-        for task in waiting_queue:
-            curr_waiting = task
+        if waiting_queue != []:
+            curr_waiting = waiting_queue[0]
             if curr_waiting.type == "X" and R[0] >= 1 and R[1] >= 1:
-                curr_task.state = "ready"
+                curr_waiting.state = "ready"
                 ready_queue.insert(0, waiting_queue.pop(0))
             elif curr_waiting.type == "Y" and R[1] >= 1 and R[2] >= 1:
-                curr_task.state = "ready"
+                curr_waiting.state = "ready"
                 ready_queue.insert(0, waiting_queue.pop(0))
             elif curr_waiting.type == "Z" and R[0] >= 1 and R[2] >= 1:
-                curr_task.state = "ready"
+                curr_waiting.state = "ready"
                 ready_queue.insert(0, waiting_queue.pop(0))
 
-        curr_task = ready_queue[0]
-        if curr_task.type == "X" and R[0] >= 1 and R[1] >= 1:
-            R[0] -= 1
-            R[1] -= 1
+        for curr_task in ready_queue:
+            if curr_task.type == "X" and R[0] >= 1 and R[1] >= 1:
+                R[0] -= 1
+                R[1] -= 1
 
-            curr_task.state = "running"
+                curr_task.state = "running"
 
-            CPUs[cpu_index] = ready_queue.pop(0)
-        elif curr_task.type == "Y" and R[1] >= 1 and R[2] >= 1:
-            R[1] -= 1
-            R[2] -= 1
+                CPUs[cpu_index] = ready_queue.pop(0)
+                break
+            elif curr_task.type == "Y" and R[1] >= 1 and R[2] >= 1:
+                R[1] -= 1
+                R[2] -= 1
 
-            curr_task.state = "running"
+                curr_task.state = "running"
 
-            CPUs[cpu_index] = ready_queue.pop(0)
-        elif curr_task.type == "Z" and R[0] >= 1 and R[2] >= 1:
-            R[0] -= 1
-            R[2] -= 1
+                CPUs[cpu_index] = ready_queue.pop(0)
+                break
+            elif curr_task.type == "Z" and R[0] >= 1 and R[2] >= 1:
+                R[0] -= 1
+                R[2] -= 1
 
-            curr_task.state = "running"
+                curr_task.state = "running"
 
-            CPUs[cpu_index] = ready_queue.pop(0)
-        else:
-            curr_task.state = "waiting"
-            waiting_queue.append(ready_queue.pop(0))
+                CPUs[cpu_index] = ready_queue.pop(0)
+                break
+            else:
+                curr_task.state = "waiting"
+                waiting_queue.append(ready_queue.pop(0))
 
         if counter == 4:
             counter = 0

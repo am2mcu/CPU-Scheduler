@@ -42,32 +42,107 @@ def get_input():
         task_name, task_type, duration = input().split()
         tasks.append(Task(task_name, task_type, int(duration)))
 
+def schedulable(cpu_index):
+    global CPUs, ready_queue, waiting_queue, R
+
+    done = False
+
+    curr_task = CPUs[cpu_index]
+    if curr_task.type == "X":
+        R[0] += 1
+        R[1] += 1
+    elif curr_task.type == "Y":
+        R[1] += 1
+        R[2] += 1
+    elif curr_task.type == "Z":
+        R[0] += 1
+        R[2] += 1
+
+    if waiting_queue != []:
+        curr_waiting = waiting_queue[0]
+        if curr_waiting.type == "X" and R[0] >= 1 and R[1] >= 1:
+            curr_waiting.state = "ready"
+            ready_queue.insert(0, waiting_queue.pop(0))
+        elif curr_waiting.type == "Y" and R[1] >= 1 and R[2] >= 1:
+            curr_waiting.state = "ready"
+            ready_queue.insert(0, waiting_queue.pop(0))
+        elif curr_waiting.type == "Z" and R[0] >= 1 and R[2] >= 1:
+            curr_waiting.state = "ready"
+            ready_queue.insert(0, waiting_queue.pop(0))
+
+    for curr_ready in ready_queue:
+        if curr_ready.type == "X" and R[0] >= 1 and R[1] >= 1:
+            R[0] -= 1
+            R[1] -= 1
+
+            curr_ready.state = "running"
+
+            
+            CPUs[cpu_index] = ready_queue.pop(0)
+            done = True
+            break
+        elif curr_ready.type == "Y" and R[1] >= 1 and R[2] >= 1:
+            R[1] -= 1
+            R[2] -= 1
+
+            curr_ready.state = "running"
+
+            CPUs[cpu_index] = ready_queue.pop(0)
+            done = True
+            break
+        elif curr_ready.type == "Z" and R[0] >= 1 and R[2] >= 1:
+            R[0] -= 1
+            R[2] -= 1
+
+            curr_ready.state = "running"
+
+            CPUs[cpu_index] = ready_queue.pop(0)
+            done = True
+            break
+        else:
+            curr_ready.state = "waiting"
+            waiting_queue.append(ready_queue.pop(0))
+
+    if done:
+        curr_task.time_running += 1
+
+        if curr_task.time_running == curr_task.duration:
+            pass
+        else:
+            ready_queue.append(curr_task)
+    else:
+        if curr_task.type == "X":
+            R[0] -= 1
+            R[1] -= 1
+        elif curr_task.type == "Y":
+            R[1] -= 1
+            R[2] -= 1
+        elif curr_task.type == "Z":
+            R[0] -= 1
+            R[2] -= 1
+
+    return done
+
 def execute(cpu_index):
     global ready_queue, counter, cycle
 
     while True:
         semaphore.acquire()
         counter += 1
-
-        print(cycle+1)
-        # if there's no task left it should not take out the task
-        if cycle == time_quantum and CPUs[cpu_index] != "Idle" and ( ready_queue != [] or waiting_queue != []):
-            ready_queue.append(CPUs[cpu_index])
-            
-            if curr_task.type == "X":
-                R[0] += 1
-                R[1] += 1
-            elif curr_task.type == "Y":
-                R[1] += 1
-                R[2] += 1
-            elif curr_task.type == "Z":
-                R[0] += 1
-                R[2] += 1
-
-            CPUs[cpu_index] = "Idle"
                 
 
         if CPUs[cpu_index] != "Idle":
+
+            if (cycle % time_quantum == 0):
+                if schedulable(cpu_index):
+                    if counter == 4:
+                        counter = 0
+                        semaphore_out.release()
+                        cycle += 1
+
+                    semaphore.release()
+                    time.sleep(2)
+                    continue
 
             CPUs[cpu_index].time_running += 1
 
@@ -105,44 +180,47 @@ def execute(cpu_index):
             
             continue
 
-        print(waiting_queue)
-        for task in waiting_queue:
-            curr_waiting = task
+
+        if waiting_queue != []:
+            curr_waiting = waiting_queue[0]
             if curr_waiting.type == "X" and R[0] >= 1 and R[1] >= 1:
-                curr_task.state = "ready"
+                curr_waiting.state = "ready"
                 ready_queue.insert(0, waiting_queue.pop(0))
             elif curr_waiting.type == "Y" and R[1] >= 1 and R[2] >= 1:
-                curr_task.state = "ready"
+                curr_waiting.state = "ready"
                 ready_queue.insert(0, waiting_queue.pop(0))
             elif curr_waiting.type == "Z" and R[0] >= 1 and R[2] >= 1:
-                curr_task.state = "ready"
+                curr_waiting.state = "ready"
                 ready_queue.insert(0, waiting_queue.pop(0))
 
-        curr_task = ready_queue[0]
-        if curr_task.type == "X" and R[0] >= 1 and R[1] >= 1:
-            R[0] -= 1
-            R[1] -= 1
+        for curr_task in ready_queue:
+            if curr_task.type == "X" and R[0] >= 1 and R[1] >= 1:
+                R[0] -= 1
+                R[1] -= 1
 
-            curr_task.state = "running"
+                curr_task.state = "running"
 
-            CPUs[cpu_index] = ready_queue.pop(0)
-        elif curr_task.type == "Y" and R[1] >= 1 and R[2] >= 1:
-            R[1] -= 1
-            R[2] -= 1
+                CPUs[cpu_index] = ready_queue.pop(0)
+                break
+            elif curr_task.type == "Y" and R[1] >= 1 and R[2] >= 1:
+                R[1] -= 1
+                R[2] -= 1
 
-            curr_task.state = "running"
+                curr_task.state = "running"
 
-            CPUs[cpu_index] = ready_queue.pop(0)
-        elif curr_task.type == "Z" and R[0] >= 1 and R[2] >= 1:
-            R[0] -= 1
-            R[2] -= 1
+                CPUs[cpu_index] = ready_queue.pop(0)
+                break
+            elif curr_task.type == "Z" and R[0] >= 1 and R[2] >= 1:
+                R[0] -= 1
+                R[2] -= 1
 
-            curr_task.state = "running"
+                curr_task.state = "running"
 
-            CPUs[cpu_index] = ready_queue.pop(0)
-        else:
-            curr_task.state = "waiting"
-            waiting_queue.append(ready_queue.pop(0))
+                CPUs[cpu_index] = ready_queue.pop(0)
+                break
+            else:
+                curr_task.state = "waiting"
+                waiting_queue.append(ready_queue.pop(0))
 
         if counter == 4:
             counter = 0
@@ -162,6 +240,8 @@ def output():
         print(f"time  {cycle_out}")
         for i in range(len(CPUs)):
             print(f"CPU[{i+1}]: {CPUs[i].name if CPUs[i] != 'Idle' else 'Idle'}")
+        print("ready queue:", [t.name for t in ready_queue])
+        print("waiting queue:", [t.name for t in waiting_queue])
         print()
 
 def main():

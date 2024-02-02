@@ -148,7 +148,7 @@ def main():
     # sort based on X, Y, Z
     # ready_queue = sorted(tasks, key=lambda x: priority_mapping[x.type])
 
-    ready_queue = sorted(tasks, key=lambda x: x.duration)
+    ready_queue = sorted(tasks, key=lambda x: (x.duration, priority_mapping[x.type]))
     # ready_queue = tasks
 
     

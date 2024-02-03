@@ -5,6 +5,7 @@ semaphore = threading.Semaphore()
 semaphore_out = threading.Semaphore(0)
 counter = 0
 cycle = 0
+end = False
 
 
 priority_mapping = {'X': 3, 'Y': 2, 'Z': 1}
@@ -45,7 +46,6 @@ def sort_by_ratio():
 
     for curr_ready in ready_queue:
         curr_ready.ratio = (cycle + curr_ready.duration) / curr_ready.duration
-    print([(i.name, i.ratio) for i in ready_queue])
 
     # use (1 / ratio) to sort by the highest
     return sorted(ready_queue, key=lambda x: (1/x.ratio, priority_mapping[x.type]))
@@ -54,6 +54,9 @@ def execute(cpu_index):
     global ready_queue, counter, cycle
 
     while True:
+        if end:
+            break
+
         semaphore.acquire()
         counter += 1
 
@@ -107,7 +110,6 @@ def execute(cpu_index):
                 ready_queue.insert(0, waiting_queue.pop(0))
 
         ready_queue = sort_by_ratio()
-        print([i.name for i in ready_queue])
 
         for curr_task in ready_queue:
             if curr_task.type == "X" and R[0] >= 1 and R[1] >= 1:
@@ -149,6 +151,8 @@ def execute(cpu_index):
         
 
 def output():
+    global end
+
     cycle_out = 0
     while True:
         semaphore_out.acquire()
@@ -160,6 +164,10 @@ def output():
         print("ready queue:", [t.name for t in ready_queue])
         print("waiting queue:", [t.name for t in waiting_queue])
         print()
+
+        if all([i == "Idle" for i in CPUs]):
+            end = True
+            break
 
 def main():
     global ready_queue

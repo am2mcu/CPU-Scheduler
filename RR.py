@@ -5,6 +5,7 @@ semaphore = threading.Semaphore()
 semaphore_out = threading.Semaphore(0)
 counter = 0
 cycle = 0
+end = False
 
 
 time_quantum = 2
@@ -127,6 +128,9 @@ def execute(cpu_index):
     global ready_queue, counter, cycle, R
 
     while True:
+        if end:
+            break
+
         semaphore.acquire()
         counter += 1
                 
@@ -233,6 +237,8 @@ def execute(cpu_index):
         
 
 def output():
+    global end
+
     cycle_out = 0
     while True:
         semaphore_out.acquire()
@@ -244,6 +250,10 @@ def output():
         print("ready queue:", [t.name for t in ready_queue])
         print("waiting queue:", [t.name for t in waiting_queue])
         print()
+    
+        if all([i == "Idle" for i in CPUs]):
+            end = True
+            break
 
 def main():
     global ready_queue

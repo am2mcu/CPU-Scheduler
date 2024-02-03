@@ -4,6 +4,7 @@ import time
 semaphore = threading.Semaphore()
 semaphore_out = threading.Semaphore(0)
 counter = 0
+end = False
 
 
 priority_mapping = {'X': 3, 'Y': 2, 'Z': 1}
@@ -42,6 +43,9 @@ def execute(cpu_index):
     global ready_queue, counter
 
     while True:
+        if end:
+            break
+
         semaphore.acquire()
         counter += 1
 
@@ -131,6 +135,8 @@ def execute(cpu_index):
         
 
 def output():
+    global end
+
     cycle = 0
     while True:
         semaphore_out.acquire()
@@ -142,6 +148,10 @@ def output():
         print("ready queue:", [t.name for t in ready_queue])
         print("waiting queue:", [t.name for t in waiting_queue])
         print()
+    
+        if all([i == "Idle" for i in CPUs]):
+            end = True
+            break
 
 def main():
     global ready_queue

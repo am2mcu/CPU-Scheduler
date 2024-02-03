@@ -127,7 +127,7 @@ def schedulable(cpu_index):
     return done
 
 def execute(cpu_index):
-    global ready_queue, counter, cycle, R, level
+    global ready_queue, counter, cycle, R, time_quantum, level
 
     while True:
         if end:
@@ -139,7 +139,8 @@ def execute(cpu_index):
 
         if CPUs[cpu_index] != "Idle":
 
-            if (cycle % time_quantum == 0):
+            # if quantum == 0 perform FCFS
+            if (time_quantum != 0 and cycle % time_quantum == 0):
                 if schedulable(cpu_index):
                     if counter == 4:
                         counter = 0
@@ -177,9 +178,12 @@ def execute(cpu_index):
         
         if ready_queue == [] and waiting_queue == []:
             if counter == 4:
-                ready_queue = secondary_ready_queue[level]
-                time_quantum = secondary_time_quantum[level]
-                level += 1
+                # level >= len: do not change queues (perform FCFS)
+                if level < len(secondary_ready_queue):
+                    ready_queue = secondary_ready_queue[level]
+                    time_quantum = secondary_time_quantum[level]
+                    level += 1
+                print("level:", level, "q:", time_quantum, "!!!!!!!!!!!!!!!!!!")
 
                 counter = 0
                 semaphore_out.release()
@@ -255,6 +259,10 @@ def output():
         print("R1:", R[0], "    ", "R2:", R[1], "    ", "R3:", R[2])
         print("ready queue:", [t.name for t in ready_queue])
         print("waiting queue:", [t.name for t in waiting_queue])
+        print("secondary_queues")
+        print([t.name for t in secondary_ready_queue[0]])
+        print([t.name for t in secondary_ready_queue[1]])
+        print([t.name for t in secondary_ready_queue[2]])
         print()
     
         if all([i == "Idle" for i in CPUs]):

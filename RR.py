@@ -110,7 +110,8 @@ def schedulable(cpu_index):
         if curr_task.time_running == curr_task.duration:
             pass
         else:
-            ready_queue.append(curr_task)
+            # ready_queue.append(curr_task)
+            temp_queue.append(curr_task)
     else:
         if curr_task.type == "X":
             R[0] -= 1
@@ -237,11 +238,14 @@ def execute(cpu_index):
         
 
 def output():
-    global end
+    global end, temp_queue
 
     cycle_out = 0
     while True:
         semaphore_out.acquire()
+        ready_queue.extend(temp_queue)
+        temp_queue = []
+
         cycle_out += 1
         print(f"time  {cycle_out}")
         for i in range(len(CPUs)):

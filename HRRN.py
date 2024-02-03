@@ -61,13 +61,13 @@ def execute(cpu_index):
             CPUs[cpu_index].time_running += 1
 
             if CPUs[cpu_index].time_running == CPUs[cpu_index].duration:
-                if curr_task.type == "X":
+                if CPUs[cpu_index].type == "X":
                     R[0] += 1
                     R[1] += 1
-                elif curr_task.type == "Y":
+                elif CPUs[cpu_index].type == "Y":
                     R[1] += 1
                     R[2] += 1
-                elif curr_task.type == "Z":
+                elif CPUs[cpu_index].type == "Z":
                     R[0] += 1
                     R[2] += 1
 
@@ -156,6 +156,9 @@ def output():
         print(f"time  {cycle_out}")
         for i in range(len(CPUs)):
             print(f"CPU[{i+1}]: {CPUs[i].name if CPUs[i] != 'Idle' else 'Idle'}")
+        print("R1:", R[0], "    ", "R2:", R[1], "    ", "R3:", R[2])
+        print("ready queue:", [t.name for t in ready_queue])
+        print("waiting queue:", [t.name for t in waiting_queue])
         print()
 
 def main():

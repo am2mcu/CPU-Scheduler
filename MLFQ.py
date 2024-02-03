@@ -9,7 +9,7 @@ end = False
 
 
 time_quantum = 2
-secondary_time_quantum = [3, 4, 0]
+secondary_time_quantum = [3, 4, 0] # zero for FCFS
 level = 0
 
 
@@ -18,7 +18,7 @@ priority_mapping = {'X': 3, 'Y': 2, 'Z': 1}
 CPUs = ["Idle", "Idle", "Idle", "Idle"]
 
 ready_queue = []
-secondary_ready_queue = [[], [], []]
+secondary_ready_queue = [[], [], []] # last one for FCFS
 waiting_queue = []
 
 tasks = []

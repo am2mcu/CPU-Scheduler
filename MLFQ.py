@@ -5,10 +5,12 @@ semaphore = threading.Semaphore()
 semaphore_out = threading.Semaphore(0)
 counter = 0
 cycle = 0
+end = False
 
 
 time_quantum = 2
-second_time_quantum = 3
+secondary_time_quantum = [3, 4, 0]
+level = 0
 
 
 priority_mapping = {'X': 3, 'Y': 2, 'Z': 1}
@@ -16,10 +18,8 @@ priority_mapping = {'X': 3, 'Y': 2, 'Z': 1}
 CPUs = ["Idle", "Idle", "Idle", "Idle"]
 
 ready_queue = []
-second_ready_queue = []
-third_ready_queue = []
+secondary_ready_queue = [[], [], []]
 waiting_queue = []
-temp_queue = []
 
 tasks = []
 R = []
@@ -109,12 +109,10 @@ def schedulable(cpu_index):
     if done:
         curr_task.time_running += 1
 
-        # swapped out task is finished
         if curr_task.time_running == curr_task.duration:
             pass
         else:
-            # ready_queue.append(curr_task)
-            second_ready_queue.append(curr_task)
+            secondary_ready_queue[level].append(curr_task)
     else:
         if curr_task.type == "X":
             R[0] -= 1
@@ -129,9 +127,12 @@ def schedulable(cpu_index):
     return done
 
 def execute(cpu_index):
-    global ready_queue, counter, cycle
+    global ready_queue, counter, cycle, R, level
 
     while True:
+        if end:
+            break
+
         semaphore.acquire()
         counter += 1
                 
@@ -146,19 +147,19 @@ def execute(cpu_index):
                         cycle += 1
 
                     semaphore.release()
-                    time.sleep(2)
+                    time.sleep(1)
                     continue
 
             CPUs[cpu_index].time_running += 1
 
             if CPUs[cpu_index].time_running == CPUs[cpu_index].duration:
-                if curr_task.type == "X":
+                if CPUs[cpu_index].type == "X":
                     R[0] += 1
                     R[1] += 1
-                elif curr_task.type == "Y":
+                elif CPUs[cpu_index].type == "Y":
                     R[1] += 1
                     R[2] += 1
-                elif curr_task.type == "Z":
+                elif CPUs[cpu_index].type == "Z":
                     R[0] += 1
                     R[2] += 1
 
@@ -170,18 +171,22 @@ def execute(cpu_index):
                     cycle += 1
 
                 semaphore.release()
-                time.sleep(2)
+                time.sleep(1)
                 continue
 
         
         if ready_queue == [] and waiting_queue == []:
             if counter == 4:
+                ready_queue = secondary_ready_queue[level]
+                time_quantum = secondary_time_quantum[level]
+                level += 1
+
                 counter = 0
                 semaphore_out.release()
                 cycle += 1
 
             semaphore.release()
-            time.sleep(2)
+            time.sleep(1)
             
             continue
 
@@ -233,11 +238,13 @@ def execute(cpu_index):
             cycle += 1
 
         semaphore.release()
-        time.sleep(2)
+        time.sleep(1)
 
         
 
 def output():
+    global end
+
     cycle_out = 0
     while True:
         semaphore_out.acquire()
@@ -245,9 +252,14 @@ def output():
         print(f"time  {cycle_out}")
         for i in range(len(CPUs)):
             print(f"CPU[{i+1}]: {CPUs[i].name if CPUs[i] != 'Idle' else 'Idle'}")
+        print("R1:", R[0], "    ", "R2:", R[1], "    ", "R3:", R[2])
         print("ready queue:", [t.name for t in ready_queue])
         print("waiting queue:", [t.name for t in waiting_queue])
         print()
+    
+        if all([i == "Idle" for i in CPUs]):
+            end = True
+            break
 
 def main():
     global ready_queue

@@ -183,7 +183,6 @@ def execute(cpu_index):
                     ready_queue = secondary_ready_queue[level]
                     time_quantum = secondary_time_quantum[level]
                     level += 1
-                print("level:", level, "q:", time_quantum, "!!!!!!!!!!!!!!!!!!")
 
                 counter = 0
                 semaphore_out.release()

@@ -66,7 +66,7 @@ def execute(cpu_index):
                     semaphore_out.release()
 
                 semaphore.release()
-                time.sleep(2)
+                time.sleep(1)
                 continue
 
         
@@ -76,7 +76,7 @@ def execute(cpu_index):
                 semaphore_out.release()
 
             semaphore.release()
-            time.sleep(2)
+            time.sleep(1)
             
             continue
 
@@ -126,7 +126,7 @@ def execute(cpu_index):
             semaphore_out.release()
 
         semaphore.release()
-        time.sleep(2)
+        time.sleep(1)
 
         
 
@@ -138,6 +138,9 @@ def output():
         print(f"time  {cycle}")
         for i in range(len(CPUs)):
             print(f"CPU[{i+1}]: {CPUs[i].name if CPUs[i] != 'Idle' else 'Idle'}")
+        print("R1:", R[0], "    ", "R2:", R[1], "    ", "R3:", R[2])
+        print("ready queue:", [t.name for t in ready_queue])
+        print("waiting queue:", [t.name for t in waiting_queue])
         print()
 
 def main():

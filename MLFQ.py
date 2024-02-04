@@ -45,6 +45,20 @@ def get_input():
         task_name, task_type, duration = input().split()
         tasks.append(Task(task_name, task_type, int(duration)))
 
+def sort_waiting_queue():
+    global waiting_queue
+
+    waiting_queue = sorted(waiting_queue, key=lambda x: priority_mapping[x.type])
+    for i in range(len(waiting_queue)):
+        if waiting_queue[i].type == "X" and R[0] >= 1 and R[1] >= 1:
+            pass
+        elif waiting_queue[i].type == "Y" and R[1] >= 1 and R[2] >= 1:
+            pass
+        elif waiting_queue[i].type == "Z" and R[0] >= 1 and R[2] >= 1:
+            pass
+        else:
+            waiting_queue.append(waiting_queue.pop(i))
+
 def schedulable(cpu_index):
     global CPUs, ready_queue, waiting_queue, R
 
@@ -62,6 +76,8 @@ def schedulable(cpu_index):
         R[2] += 1
 
     if waiting_queue != []:
+        sort_waiting_queue()
+
         curr_waiting = waiting_queue[0]
         if curr_waiting.type == "X" and R[0] >= 1 and R[1] >= 1:
             curr_waiting.state = "ready"
@@ -195,6 +211,8 @@ def execute(cpu_index):
 
 
         if waiting_queue != []:
+            sort_waiting_queue()
+
             curr_waiting = waiting_queue[0]
             if curr_waiting.type == "X" and R[0] >= 1 and R[1] >= 1:
                 curr_waiting.state = "ready"
